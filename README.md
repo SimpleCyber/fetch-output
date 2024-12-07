@@ -1,0 +1,2 @@
+# fetch-output
+good
