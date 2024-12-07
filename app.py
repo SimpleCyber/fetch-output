@@ -50,44 +50,29 @@ system_prompt = """
             </div>
 """
 
-@app.route('/openai', methods=['POST'])
-def get_post_response_json():
+@app.route('/command', methods=['POST'])
+def process_command():
     try:
-        # Retrieve JSON data from the request
-        query = request.get_json()
-        user_info = query.get('userinformation', {})
-        username = user_info["ProfileInfo"]["Username"]
-        print("username from open api:", username)
-
-        # Make OpenAI API call
+        # Retrieve the command from the request
+        data = request.get_json()
+        command = data.get('command', 'default')
+        
+        # OpenAI API call to generate HTML
         response = openai.ChatCompletion.create(
             model=MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": str(user_info)}
+                {"role": "user", "content": f"Generate HTML for the command: {command}"}
             ]
         )
 
-        # Extract response content
-        response_content = response["choices"][0]["message"]["content"]
-
-        # Save to directory (optional)
-        base_dir = os.path.join(os.getcwd(), username)
-        os.makedirs(base_dir, exist_ok=True)
-
-        profile_dir = os.path.join(base_dir, f"{username}_profile")
-        os.makedirs(profile_dir, exist_ok=True)
-
-        output_path = os.path.join(profile_dir, "output_data.json")
-        with open(output_path, "w") as profile_info_file:
-            json.dump(response_content, profile_info_file, indent=4)
-
-        return jsonify({"result": response_content})
-
+        # Extract and return the HTML content
+        generated_html = response["choices"][0]["message"]["content"]
+        return jsonify({"html": generated_html})
+    
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
-
 
 if __name__ == "__main__":
     app.run()
