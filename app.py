@@ -62,13 +62,13 @@ def process_command():
             model=MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Generate HTML for the command: {command}"}
+                {"role": "user", "content": str(command)}
             ]
         )
 
         # Extract and return the HTML content
-        generated_html = response["choices"][0]["message"]["content"]
-        return jsonify({"html": generated_html})
+        response_content = response["choices"][0]["message"]["content"]
+        return jsonify({"result": response_content})
     
     except Exception as e:
         print(f"Error: {e}")
